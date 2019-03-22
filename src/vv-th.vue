@@ -1,9 +1,12 @@
 <template lang="pug">
     th(
-        @mousedown="onClick"
+        @mousedown="startDrag"
         @mousemove="onDrag"
         @mouseup="onRelease"
-    )
+        @dragover.prevent
+        @drop.prevent.stop="onDrop"
+        draggable="true"
+    ).cell
         slot
 </template>
 
@@ -26,36 +29,28 @@ export default {
     },
     data() {
         return {
-            startPos: { x: 0, y: 0 },
+            startPos: { x: 0 },
             canDrag: false
         }
     },
     methods: {
-        select() {
-            console.log(`selecting: ${name}`)
-        },
-        onClick(e) {
-            this.canDrag = true
+        startDrag(e) {
             this.startPos.x = e.clientX
-            this.startPos.y = e.clientY
         },
         onDrag(e) {
-            if(this.canDrag) {
-                const xPos = Math.abs(e.clientX - this.startPos.x)
-                const yPos = Math.abs(e.clientY - this.startPos.y)
-                console.log('drag: ', xPos, '|' ,yPos)
-            }
+            const xPos = e.clientX - this.startPos.x
+            this.$emit('drag-start', { name: this.name, x: xPos })
+        },
+        onDrop(e){
+            this.$emit('drop', {target: this.name})
         },
         onRelease(e) {
             this.evalAction(e)
             this.startPos.x = 0
-            this.startPos.y = 0
-            this.canDrag = false
         },
         evalAction(e, n) {
             const xPos = Math.abs(e.clientX - this.startPos.x)
-            const yPos = Math.abs(e.clientY - this.startPos.y)
-            if(xPos < 5 && yPos < 5 && this.canSort) {
+            if(xPos < 10 && this.canSort) {
                 this.sortBy(this.name)
             }
         }
