@@ -2,6 +2,8 @@
 table.vv-table
     thead
         tr
+            th
+                button(@click="selectAll") &nbsp;
             vv-th(
                 v-for="(n,i) in activeColumns"
                 :key="`${n}-${i}`"
@@ -13,21 +15,46 @@ table.vv-table
                 p {{ icons[n] + ' ' }}{{ n }} 
                     span(v-if="Object.keys(direction).indexOf(n) >= 0") {{ direction[n] }}
                     span(v-else).light ▼
+            th
+                button(@click="selectAll") +
     tbody
         vv-row(v-for="(row, i) in entriesByRow" :key="`${row}-${i}`" :class="`row-${i}`")
+            td
+                input(type="checkbox" v-model="selectedRows" :value="i")
             td(
-                v-for="(n, i) in activeColumns"
-                :key="`${n}-${i}`"
-                :class="`row-${i}--cell-${i}`"
-            ).cell {{ row[n] }}
+                v-for="(n, j) in activeColumns"
+                :key="`${n}-${j}`"
+                :class="`row-${i}--cell-${j}`"
+            ).cell 
+                .cell--value(v-show="`${i}-${row[n]}` !== inEdit")
+                    label(@dblclick="inEdit = `${i}-${row[n]}`") {{ row[n] }}
+                input(
+                    v-show="`${i}-${row[n]}` === inEdit"
+                    :value="row[n]"
+                    v-on:blur="inEdit = false; $emit('update')"
+                    @keyup.enter="inEdit = false; $emit('update')"
+                    v-edit-hilite
+                )
+            td
+        tr
+            td(colspan="6").new-row
+                button(@click="addRow") +
+    p {{inEdit}}
 </template>
 
 <script>
 import vv_th from './vv-th.vue'
 import vv_row from './vv-row.vue'
 
-
 export default {
+    directives: {
+        'editHilite': {
+            update: (el) => {
+                el.focus()
+                el.select()
+            }
+        }
+    },
     components: {
         'vv-th': vv_th,
         'vv-row': vv_row,
@@ -51,7 +78,9 @@ export default {
             activeColumns: [],
             entriesByRow: [],
             direction: {},
-            dragging: ''
+            dragging: '',
+            selectedRows: [],
+            inEdit: false
         }
     },
     computed: {
@@ -60,9 +89,32 @@ export default {
                 columns[name] = this.entriesByRow.map(row => row[name])
                 return columns
             }, {})
+        },
+        selectedEntries() {
+            return this.selectedRows.reduce((selects, i) => { 
+                selects.push(this.entriesByRow[i])
+                return selects 
+            }, [])
         }
     },
     methods: {
+        selectAll() {
+            if (this.selectedRows.length === this.entriesByRow.length) {
+                this.selectedRows = []
+            } else {
+                this.selectedRows = this.entriesByRow.reduce((selects, entry, i) => { 
+                    selects.push(i)
+                    return selects
+                }, [])
+            }
+        },
+        addRow() {
+            const newRow = this.activeColumns.reduce((row, col) => {
+                row[col] = `${col}`
+                return row
+            }, {})
+            this.entriesByRow.push(newRow)
+        },
         onDrag({ name, x, y }) {
             this.dragging = name
         },
@@ -134,12 +186,21 @@ table.vv-table
                 align-items: center
                 justify-content: center
                 text-transform: uppercase
+            button
+                border: none
+                background: transparent
+                width: 100%
     tr
         background-color: #ededed
         &:nth-child(even)
             background-color: #dddddd
         .cell
             padding: 0.125em 0.25em
+        .new-row
+            button
+                border: none
+                background: transparent
+                width: 100%
     .light
         color: #dddddd
 </style>
