@@ -1,6 +1,6 @@
 <template lang="pug">
     #app
-        vv-table(:entries="entries" :hide="colToHide" :icons="icons")
+        vv-table(:entries="entries" :hide="colToHide" :icons="icons", :canEdit="true")
 </template>
 
 <script>

@@ -29,7 +29,7 @@ table.vv-table
                 .cell--value(v-show="`${i}-${row[n]}` !== inEdit")
                     label(@dblclick="inEdit = `${i}-${row[n]}`") {{ row[n] }}
                 input(
-                    v-show="`${i}-${row[n]}` === inEdit"
+                    v-show="`${i}-${row[n]}` === inEdit && canEdit"
                     :value="row[n]"
                     v-on:blur="inEdit = false; $emit('update')"
                     @keyup.enter="inEdit = false; $emit('update')"
@@ -70,6 +70,10 @@ export default {
         },
         icons: {
             type: Object,
+            required: false
+        },
+        canEdit: {
+            type: Boolean,
             required: false
         }
     },
