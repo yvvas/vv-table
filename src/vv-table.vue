@@ -93,12 +93,6 @@ export default {
                 columns[name] = this.entriesByRow.map(row => row[name])
                 return columns
             }, {})
-        },
-        selectedEntries() {
-            return this.selectedRows.reduce((selects, i) => { 
-                selects.push(this.entriesByRow[i])
-                return selects 
-            }, [])
         }
     },
     methods: {
@@ -147,8 +141,18 @@ export default {
                 this.direction[colName] = '▲'
             }
         },
-        initEntries() {
-            this.activeColumns = Object.keys(this.entries[0])
+    },
+    created() {
+        this.activeColumns = Object.keys(this.entries[0])
+        this.entriesByRow = this.entries.map(entry => {
+                return this.activeColumns.reduce((trimmed, col) => {
+                    trimmed[col] = entry[col]
+                    return trimmed
+                }, {})
+            })
+    },
+    watch: {
+        entries: function () {
             this.entriesByRow = this.entries.map(entry => {
                 return this.activeColumns.reduce((trimmed, col) => {
                     trimmed[col] = entry[col]
@@ -156,19 +160,18 @@ export default {
                 }, {})
             })
         },
-        deactivateColumns() {
+        hide: function () {
             if(this.hide) {
                 this.hide.forEach(col => {
                     if(this.activeColumns.indexOf(col) >= 0) {
-                        this.activeColumns.splice(this.activeColumns.indexOf(col), 1)
+                        this.activeColumns.splice(
+                            this.activeColumns.indexOf(col),
+                            1
+                        )
                     }
                 })
             }
         }
-    },
-    created() {
-        this.initEntries()
-        this.deactivateColumns()
     }
 }
 </script>
