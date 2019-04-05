@@ -27,10 +27,10 @@ table.vv-table
                 :key="`${n}-${j}`"
                 :class="`row-${i}--cell-${j}`"
             ).cell
-                .cell--value(v-show="`${entries[i]._id}-${n}-${row[n]}` !== inEdit")
-                    label(@dblclick="inEdit = `${entries[i]._id}-${n}-${row[n]}`") {{ row[n] }}
+                .cell--value(v-show="`${n}-${row[n]}` !== inEdit")
+                    label(@dblclick="inEdit = `${n}-${row[n]}`") {{ row[n] }}
                 input(
-                    v-show="`${entries[i]._id}-${n}-${row[n]}` === inEdit && canEdit"
+                    v-show="`${n}-${row[n]}` === inEdit && canEdit"
                     :value="row[n]"
                     v-on:blur="inEdit = false; $emit('update', [row, n, row[n]])"
                     @keyup.enter="inEdit = false; $emit('update', [row, n, row[n]])"
@@ -119,7 +119,6 @@ export default {
             this.entriesByRow.push(newRow)
         },
         sortByDefault(colName) {
-            console.log(colName)
             const sorted = this.entriesByRow.sort((a, b) => {
                 if( a[colName] < b[colName]) { return -1 }
                 if( a[colName] > b[colName]) { return 1 }
