@@ -1,20 +1,21 @@
 <template lang="pug">
 table.vv-table
     thead
-        tr
+        vv-row
             th
                 button(@click="selectAll") &nbsp;
-            vv-th(
-                v-for="(n,i) in activeColumns"
-                :key="`${n}-${i}`"
-                :name="n"
-                :sortBy="sortByDefault"
-                v-on:drag-start="onDrag"
-                v-on:drop="onDrop"
+            th(
+                v-for="(name,i) in activeColumns"
+                :key="`${name}-${i}`"
+                @click="sortByDefault(name)"
+                @dd-drop="onDrop"
+                v-dd="{ name }"
             )
-                p {{ icons[n] + ' ' }}{{ n }} 
-                    span(v-if="Object.keys(direction).indexOf(n) >= 0") {{ direction[n] }}
-                    span(v-else).light ▼
+                .colname(@dd-drop="onDrop")
+                    p {{ icons[name] + ' ' }}
+                        span {{ name }}
+                        span(v-if="Object.keys(direction).indexOf(name) >= 0") {{ direction[name] }}
+                        span(v-else).light ▼
             th
                 button(@click="selectAll") +
     tbody
@@ -25,15 +26,15 @@ table.vv-table
                 v-for="(n, j) in activeColumns"
                 :key="`${n}-${j}`"
                 :class="`row-${i}--cell-${j}`"
-            ).cell 
-                .cell--value(v-show="`${i}-${row[n]}` !== inEdit")
-                    label(@dblclick="inEdit = `${i}-${row[n]}`") {{ row[n] }}
+            ).cell
+                .cell--value(v-show="`${entries[i]._id}-${n}-${row[n]}` !== inEdit")
+                    label(@dblclick="inEdit = `${entries[i]._id}-${n}-${row[n]}`") {{ row[n] }}
                 input(
-                    v-show="`${i}-${row[n]}` === inEdit && canEdit"
+                    v-show="`${entries[i]._id}-${n}-${row[n]}` === inEdit && canEdit"
                     :value="row[n]"
-                    v-on:blur="inEdit = false; $emit('update')"
-                    @keyup.enter="inEdit = false; $emit('update')"
-                    v-edit-hilite
+                    v-on:blur="inEdit = false; $emit('update', [row, n, row[n]])"
+                    @keyup.enter="inEdit = false; $emit('update', [row, n, row[n]])"
+                    v-hilite
                 )
             td
         tr
@@ -45,15 +46,12 @@ table.vv-table
 <script>
 import vv_th from './vv-th.vue'
 import vv_row from './vv-row.vue'
+import directives from './directives.js'
 
 export default {
     directives: {
-        'editHilite': {
-            update: (el) => {
-                el.focus()
-                el.select()
-            }
-        }
+        'hilite': directives.hilite,
+        'dd': directives.dd
     },
     components: {
         'vv-th': vv_th,
@@ -84,7 +82,7 @@ export default {
             direction: {},
             dragging: '',
             selectedRows: [],
-            inEdit: false
+            inEdit: false,
         }
     },
     computed: {
@@ -96,11 +94,18 @@ export default {
         }
     },
     methods: {
+        onDrop(el, target, ev) {
+            const i = this.activeColumns.indexOf(el.name)
+            const t = this.activeColumns.indexOf(target)
+
+            this.activeColumns.splice(i, 1)
+            this.activeColumns.splice(t, 0, el.name)
+        },
         selectAll() {
             if (this.selectedRows.length === this.entriesByRow.length) {
                 this.selectedRows = []
             } else {
-                this.selectedRows = this.entriesByRow.reduce((selects, entry, i) => { 
+                this.selectedRows = this.entriesByRow.reduce((selects, entry, i) => {
                     selects.push(i)
                     return selects
                 }, [])
@@ -113,17 +118,8 @@ export default {
             }, {})
             this.entriesByRow.push(newRow)
         },
-        onDrag({ name, x, y }) {
-            this.dragging = name
-        },
-        onDrop({ target }) {
-            const i = this.activeColumns.indexOf(this.dragging)
-            const t = this.activeColumns.indexOf(target)
-            this.activeColumns.splice(i, 1)
-            this.activeColumns.splice(t, 0, this.dragging)
-            this.dragging = ''
-        },
         sortByDefault(colName) {
+            console.log(colName)
             const sorted = this.entriesByRow.sort((a, b) => {
                 if( a[colName] < b[colName]) { return -1 }
                 if( a[colName] > b[colName]) { return 1 }
@@ -141,24 +137,35 @@ export default {
                 this.direction[colName] = '▲'
             }
         },
-    },
-    created() {
-        this.activeColumns = Object.keys(this.entries[0])
-        this.entriesByRow = this.entries.map(entry => {
-                return this.activeColumns.reduce((trimmed, col) => {
-                    trimmed[col] = entry[col]
-                    return trimmed
-                }, {})
-            })
-    },
-    watch: {
-        entries: function () {
+        setEntries() {
             this.entriesByRow = this.entries.map(entry => {
                 return this.activeColumns.reduce((trimmed, col) => {
                     trimmed[col] = entry[col]
                     return trimmed
                 }, {})
             })
+        },
+        setActiveColumns() {
+            this.activeColumns = Object.keys(this.entries[0])
+            if(this.hide) {
+                this.hide.forEach(col => {
+                    if(this.activeColumns.indexOf(col) >= 0) {
+                        this.activeColumns.splice(
+                            this.activeColumns.indexOf(col),
+                            1
+                        )
+                    }
+                })
+            }
+        }
+    },
+    created() {
+        this.setActiveColumns()
+        this.setEntries()
+    },
+    watch: {
+        entries() {
+            console.log('updated entries')
         },
         hide: function () {
             if(this.hide) {

@@ -1,6 +1,6 @@
 <template lang="pug">
     #app
-        vv-table(:entries="entries" :hide="colToHide" :icons="icons", :canEdit="true")
+        vv-table(:entries="entries" :hide="colToHide" :icons="icons", v-on:update="update" :canEdit="true")
 </template>
 
 <script>
@@ -24,28 +24,32 @@ export default {
                     email: '@',
                     phone: '789',
                     status: 'alive',
-                    size: 'xl'
+                    size: 'xl',
+                    _id: '001'
                 },
                 {
                     name: 'rob',
                     email: '#',
                     phone: '456',
                     status: 'dead',
-                    size: 's'
+                    size: 's',
+                    _id: '002'
                 },
                 {
                     name: 'lob',
                     email: '%',
                     phone: '123',
                     status: 'alive',
-                    size: 'm'
+                    size: 'm',
+                    _id: '003'
                 },
                 {
                     name: 'nob',
                     email: '&',
                     phone: '555',
                     status: 'alive',
-                    size: 'xl'
+                    size: 'xl',
+                    _id: '004'
                 },
             ],
             icons: {
@@ -55,8 +59,21 @@ export default {
                 status: '☂',
                 size: '♫'
             },
-            colToHide: ['status'],
+            colToHide: ['status', '_id'],
         }
     },
+    methods: {
+        update(payload) {
+            this.entries.forEach((element, i) => {
+                if(element._id === payload[0]._id) {
+                    const k = payload[1]
+                    const v = payload[2]
+                    element[k] = v
+                    this.entries[i] = element
+                    console.log(k, v)
+                }
+            })
+        }
+    }
 }
 </script>
