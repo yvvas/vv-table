@@ -46,12 +46,12 @@ table.vv-table
 <script>
 import vv_th from './vv-th.vue'
 import vv_row from './vv-row.vue'
-import directives from './directives.js'
+import hilite from 'vv-hilite'
 import dd from 'vv-dd'
 
 export default {
     directives: {
-        'hilite': directives.hilite,
+        hilite,
         dd
     },
     components: {
