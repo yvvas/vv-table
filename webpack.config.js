@@ -1,5 +1,7 @@
-const path = require('path')
 const webpack = require('webpack')
+const merge = require('webpack-merge')
+const path = require('path')
+
 const { VueLoaderPlugin } = require('vue-loader')
 
 const PostCssPlugins = [
@@ -8,7 +10,7 @@ const PostCssPlugins = [
     require('autoprefixer')
 ]
 
-module.exports = (env = {}) => {
+module.exports = ( env = {} ) => {
     return {
         mode: env.production ? 'production' : 'development',
         module: {
@@ -65,18 +67,34 @@ module.exports = (env = {}) => {
             ]
         },
         output: {
-            path: path.join(__dirname, 'public'),
+            path: path.join(__dirname, 'dist'),
             publicPath: '/'
         },
-        devServer: {
-            historyApiFallback: true
-        },
-        devtool: env.production ? false : 'cheap-module-eval-source-map',
+        // externals: {
+        //     vue: 'vue'
+        // },
         plugins: [
-            new webpack.DefinePlugin({
-                PRODUCTION: JSON.stringify(env.production)
-            }),
             new VueLoaderPlugin()
         ]
     }
 }
+
+// module.exports = [
+//     merge( config, {
+//         entry: path.join( __dirname, 'src/plugin.js' ),
+//         output: {
+//             filename: 'vv-table.min.js',
+//             libraryTarget: 'window',
+//             library: 'VVtable',
+//         }
+//     } ),
+//     merge( config, {
+//         entry: path.join( __dirname, 'src/vv-table.vue' ),
+//         output: {
+//             filename: 'vv-table.js',
+//             libraryTarget: 'umd',
+//             library: 'vv-table',
+//             umdNamedDefine: true
+//         }
+//     } )
+// ]

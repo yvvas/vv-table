@@ -1,8 +1,11 @@
 {
   "name": "vv-table",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "description": "table",
-  "main": "index.js",
+  "main": "dist/vv-table.js",
+  "browser": {
+    "./sfc": "src/vv-table.vue"
+  },
   "scripts": {
     "dev": "webpack-dev-server --hot",
     "build": "webpack -p --env.production --progress --hide-modules",
@@ -12,7 +15,8 @@
   "author": "TOJ",
   "license": "UNLICENSED",
   "dependencies": {
-    "vue": "^2.6.8"
+    "vue": "^2.6.8",
+    "vv-dd": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.3.4",
@@ -38,7 +42,8 @@
     "vue-template-compiler": "^2.6.8",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.2.3",
-    "webpack-dev-server": "^3.2.1"
+    "webpack-dev-server": "^3.2.1",
+    "webpack-merge": "^4.2.1"
   },
   "babel": {
     "presets": [

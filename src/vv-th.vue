@@ -4,7 +4,8 @@
 </template>
 
 <script>
-import dd from './directives.js'
+import dd from 'vv-dd'
+
 export default {
     directives: {
         dd
