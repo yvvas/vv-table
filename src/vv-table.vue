@@ -1,9 +1,9 @@
 <template lang="pug">
-table.vv-table
+table.vv-table.local
     thead
         vv-row
             th
-                button(@click="selectAll") &nbsp;
+                button(@click="selectAll") ✔
             th(
                 v-for="(name,i) in activeColumns"
                 :key="`${name}-${i}`"
@@ -12,10 +12,13 @@ table.vv-table
                 v-dd="{ name }"
             )
                 .colname(@dd-drop="onDrop")
-                    p {{ icons[name] + ' ' }}
-                        span {{ name }}
-                        span(v-if="Object.keys(direction).indexOf(name) >= 0") {{ direction[name] }}
-                        span(v-else).light ▼
+                    p(v-if="icons[name]") {{ icons[name] + ' ' }}
+                        span &nbsp;{{ name }}
+                        span(v-if="Object.keys(direction).indexOf(name) >= 0") &nbsp;{{ direction[name] }}
+                        span(v-else).light &nbsp;▼
+                    p(v-else) {{ name }}
+                        span(v-if="Object.keys(direction).indexOf(name) >= 0") &nbsp;{{ direction[name] }}
+                        span(v-else).light &nbsp;▼
             th
                 button(@click="selectAll") +
     tbody
@@ -27,20 +30,19 @@ table.vv-table
                 :key="`${n}-${j}`"
                 :class="`row-${i}--cell-${j}`"
             ).cell
-                .cell--value(v-show="`${n}-${row[n]}` !== inEdit")
-                    label(@dblclick="inEdit = `${n}-${row[n]}`") {{ row[n] }}
+                .cell--value(v-show="`${n}-${row[n]}-row-${i}` !== inEdit")
+                    label(@dblclick="setEdit(`${n}-${row[n]}-row-${i}`)") {{ row[n] }}
                 input(
-                    v-show="`${n}-${row[n]}` === inEdit && canEdit"
+                    v-show="`${n}-${row[n]}-row-${i}` === inEdit && canEdit"
                     :value="row[n]"
-                    v-on:blur="inEdit = false; $emit('update', [row, n, row[n]])"
-                    @keyup.enter="inEdit = false; $emit('update', [row, n, row[n]])"
+                    v-on:blur="inEdit = false; $emit('update--vv-table', [row, n, row[n]])"
+                    @keyup.enter="inEdit = false; $emit('update--vv-table', [row, n, row[n]])"
                     v-hilite
                 )
             td
         tr
-            td(colspan="6").new-row
+            td(:colspan="activeColumns.length + 2").new-row
                 button(@click="addRow") +
-    p {{inEdit}}
 </template>
 
 <script>
@@ -95,6 +97,11 @@ export default {
         }
     },
     methods: {
+        setEdit(cell) {
+            if(!this.canEdit) return
+            console.log(`vv-table: editing ${cell}`)
+            this.inEdit = cell
+        },
         onDrop(el, target, ev) {
             const i = this.activeColumns.indexOf(el.name)
             const t = this.activeColumns.indexOf(target)
@@ -160,12 +167,13 @@ export default {
         }
     },
     created() {
+        console.warn('vv-table: using local component')
         this.setActiveColumns()
         this.setEntries()
     },
     watch: {
         entries() {
-            console.log('updated entries')
+            console.warn('vv-table: updated entries')
         },
         hide: function () {
             if(this.hide) {
@@ -188,33 +196,43 @@ table.vv-table
     border-spacing: 0
     vertical-align: baseline
     thead
-        th
-            border-bottom: 1px #cccccc solid
-            border-right: 1px #dddddd solid
-            &:nth-last-child(1)
-                border-right: none
-            p
-                padding: 0
-                margin: 0
-                display: flex
-                align-items: center
-                justify-content: center
-                text-transform: uppercase
-            button
-                border: none
-                background: transparent
-                width: 100%
+        tr
+            th
+                border-bottom: 1px #cccccc solid
+                border-right: 1px #dddddd solid
+                &:first-child, &:last-child
+                    padding: 0 !important
+                    width: 0 !important
+                &:nth-last-child(1)
+                    border-right: none
+                p
+                    padding: 0
+                    margin: 0
+                    display: flex
+                    align-items: center
+                    justify-content: center
+                    text-transform: uppercase
+                button
+                    border: none
+                    background: transparent
+                    width: 2em
     tr
         background-color: #ededed
         &:nth-child(even)
             background-color: #dddddd
         .cell
             padding: 0.125em 0.25em
+            > input
+                width: 100%
+                border: none
+                padding: 0.3em
         .new-row
             button
                 border: none
                 background: transparent
                 width: 100%
+        > td:first-child
+            text-align: center
     .light
         color: #dddddd
 </style>
