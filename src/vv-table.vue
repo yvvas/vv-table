@@ -36,8 +36,8 @@ table.vv-table.local
                 input(
                     v-show="`${n}-${row[n]}-row-${i}` === inEdit && canEdit"
                     v-model="editValue"
-                    v-on:blur="$emit('update:entries', [row, n, editValue]); inEdit = false; editValue = ''"
-                    @keyup.enter="$emit('update:entries', [row, n, editValue]); inEdit = false; editValue = ''"
+                    v-on:blur="$emit('update', [row, n, editValue]); inEdit = false; editValue = ''"
+                    @keyup.enter="$emit('update', [row, n, editValue]); inEdit = false; editValue = ''"
                     v-hilite
                 ).cell--edit
             td
