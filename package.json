@@ -1,6 +1,6 @@
 {
   "name": "vv-table",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "table",
   "main": "dist/vv-table.js",
   "browser": {
