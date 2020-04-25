@@ -22,7 +22,7 @@ table.vv-table.local
             th
                 button(@click="selectAll") +
     tbody
-        vv-row(v-for="(row, i) in entriesByRow" :key="`${row}-${i}`" :class="`row-${i}`")
+        vv-row(v-for="(row, i) in entriesByRow" :key="`row-${i}`" :class="`row-${i}`")
             td
                 input(type="checkbox" v-model="selectedRows" :value="i")
             td(
@@ -36,8 +36,8 @@ table.vv-table.local
                 input(
                     v-show="`${n}-${row[n]}-row-${i}` === inEdit && canEdit"
                     v-model="editValue"
-                    v-on:blur="$emit('update', [row, n, editValue]); inEdit = false; editValue = ''"
-                    @keyup.enter="$emit('update', [row, n, editValue]); inEdit = false; editValue = ''"
+                    v-on:blur="sendEdit([i, n, editValue])"
+                    @keyup.enter="sendEdit([i, n, editValue])"
                     v-hilite
                 ).cell--edit
             td
@@ -101,11 +101,18 @@ export default {
         }
     },
     methods: {
+        sendEdit(msg) {
+            if(this.editValue) {
+                const record = this.entries[msg[0]]
+                this.$emit('editted', [ record, msg[1], msg[2] ]) 
+                this.inEdit = false
+                this.editValue = ''
+            }
+        },
         setEdit(cell, value) {
             if(!this.canEdit) return
             this.editValue = value
 
-            console.log(`vv-table: editing ${cell}`)
             this.inEdit = cell
         },
         onDrop(el, target, ev) {
