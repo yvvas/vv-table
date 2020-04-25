@@ -31,18 +31,21 @@ table.vv-table.local
                 :class="`row-${i}--cell-${j}`"
             ).cell
                 .cell--value(v-show="`${n}-${row[n]}-row-${i}` !== inEdit")
-                    label(@dblclick="setEdit(`${n}-${row[n]}-row-${i}`)") {{ row[n] }}
+                    label(@dblclick="setEdit(`${n}-${row[n]}-row-${i}`, row[n])") {{ row[n] }}
+                    button(v-if="row[n] == '' && canEdit" @click="setEdit(`${n}-${row[n]}-row-${i}`, row[n])") add
                 input(
                     v-show="`${n}-${row[n]}-row-${i}` === inEdit && canEdit"
-                    :value="row[n]"
-                    v-on:blur="inEdit = false; $emit('update--vv-table', [row, n, row[n]])"
-                    @keyup.enter="inEdit = false; $emit('update--vv-table', [row, n, row[n]])"
+                    v-model="editValue"
+                    v-on:blur="$emit('update:entries', [row, n, editValue]); inEdit = false; editValue = ''"
+                    @keyup.enter="$emit('update:entries', [row, n, editValue]); inEdit = false; editValue = ''"
                     v-hilite
-                )
+                ).cell--edit
             td
         tr
-            td(:colspan="activeColumns.length + 2").new-row
+            td(:colspan="activeColumns.length + 1").new-row
                 button(@click="addRow") +
+            td
+                p {{editValue}}
 </template>
 
 <script>
@@ -86,6 +89,7 @@ export default {
             dragging: '',
             selectedRows: [],
             inEdit: false,
+            editValue: ''
         }
     },
     computed: {
@@ -97,8 +101,10 @@ export default {
         }
     },
     methods: {
-        setEdit(cell) {
+        setEdit(cell, value) {
             if(!this.canEdit) return
+            this.editValue = value
+
             console.log(`vv-table: editing ${cell}`)
             this.inEdit = cell
         },
@@ -226,6 +232,9 @@ table.vv-table
                 width: 100%
                 border: none
                 padding: 0.3em
+            &--value > button
+                border: none
+                opacity: 0.2
         .new-row
             button
                 border: none
